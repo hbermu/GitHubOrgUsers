@@ -1,0 +1,33 @@
+###########################
+########## LDAP  ##########
+###########################
+[ldap]
+user = "cn=admin,dc=org,dc=com"
+password = "admin"
+hostname = "localhost"
+port = 389
+base_dn = "dc=org,dc=com"
+search_attribute = "cn"
+
+###########################
+########## GITHUB #########
+###########################
+[github]
+token = ""
+org = ""
+suf = ""
+ignore = ""
+
+###########################
+########## SMTP  ##########
+###########################
+[smtp]
+enabled = true
+host = "smtp.gmail.com"
+port = 587
+user = "user@gmail.com"
+password = ""
+skip_verify = true
+from_address = "user@gmail.com"
+from_name = "User"
+to_addresses = "user@gmail.com"
