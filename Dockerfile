@@ -1,5 +1,5 @@
 FROM golang:1.13.1-alpine3.10
-ENV CREATED 2019-02-28
+ENV CREATED 2019-10-01
 LABEL maintainer1="Héctor Bermúdez<hbermu@protonmail.ch>"
 LABEL name="GitHub-Users-Ldap" \
         version="0.1" \

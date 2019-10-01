@@ -38,10 +38,10 @@ import (
 const (
 	program 				= "Github_Users_LDAP" // For Prometheus metrics.
 	Version   				= "0.0.1"
-	Revision  				= "--/--/---"
+	Revision  				= "01/10/2019"
 	Branch    				= "master"
 	BuildUser 				= "hbermu"
-	BuildDate 				= "--/--/---"
+	BuildDate 				= "01/10/2019"
 	defaultConfigPath 		= "./config.toml"
 
 	// LDAP Default Config
