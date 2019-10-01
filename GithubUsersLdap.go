@@ -443,17 +443,19 @@ func main() {
 	} else {
 		log.Warnln("SMTP disabled")
 		log.Warnln("The mail will not send")
-		log.Warnln("Usuarios reconocidos sin el sufijo:")
+
+		message :=  "Usuarios reconocidos sin el sufijo:\n"
 		for _,user := range wrongUsersNoSufRecon {
-			log.Warnln("\t" + user)
+			message = message + "\t" + user + "\n"
 		}
-		log.Warnln("Usuarios con el sufijo no reconocidos:")
+		message = message + "\t" + "Usuarios con el sufijo no reconocidos:"
 		for _,user := range wrongUsers {
-			log.Warnln("\t" + user)
+			message = message + "\t" + user + "\n"
 		}
-		log.Warnln("Usuarios no reconocidos:")
+		message = message + "\t" + "Usuarios no reconocidos:"
 		for _,user := range wrongUsersNoSufNoRecon {
-			log.Warnln("\t" + user)
+			message = message + "\t" + user + "\n"
 		}
+		log.Warnln(message)
 	}
 }
