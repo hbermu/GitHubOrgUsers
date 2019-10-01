@@ -430,9 +430,6 @@ func main() {
 
 	config := readConfig(*configPath)
 
-	fmt.Println(config.GitHubIgnore)
-
-
 	usersLdap := getUsersLdap(config)
 	usersGitHub := getUsersGitHub(config)
 
