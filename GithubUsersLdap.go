@@ -448,11 +448,11 @@ func main() {
 		for _,user := range wrongUsersNoSufRecon {
 			message = message + "\t" + user + "\n"
 		}
-		message = message + "\t" + "Usuarios con el sufijo no reconocidos:"
+		message = message + "\t" + "Usuarios con el sufijo no reconocidos:\n"
 		for _,user := range wrongUsers {
 			message = message + "\t" + user + "\n"
 		}
-		message = message + "\t" + "Usuarios no reconocidos:"
+		message = message + "\t" + "Usuarios no reconocidos:\n"
 		for _,user := range wrongUsersNoSufNoRecon {
 			message = message + "\t" + user + "\n"
 		}
