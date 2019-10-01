@@ -286,29 +286,57 @@ func gitHubRequest(config Config, page int) (string, bool){
 
 }
 
+func checkExistSuf(config Config, githubUsers []string) ([]string, []string){
+	log.Infoln("Check if all users have the right suffix")
 
-func compareUsersLists(config Config, ldapUsers []string, githubUsers []string) []string{
+	wrongUsers := make([]string, 0)
+	rightUsers := make([]string, 0)
+
+	for _,user := range githubUsers {
+		if !strings.Contains(strings.ToLower(user), strings.ToLower(config.GitHubSuf)){
+			log.Debugln("User without suffix founded:", user)
+
+			if !contains(user, config.GitHubIgnore) {
+				wrongUsers = append(wrongUsers, user)
+			} else {
+				log.Debugln("User is in ignore list")
+			}
+		} else {
+			rightUsers = append(rightUsers, user)
+		}
+	}
+
+	return wrongUsers,rightUsers
+}
+
+func compareUsersLists(config Config, ldapUsers []string, githubUsers []string) ([]string, []string){
 	log.Info("Comparing users from GitHub and LDAP")
 
 	wrongUsers := make([]string, 0)
+	rightUsers := make([]string, 0)
 
 	for _,user := range githubUsers {
 
-		if !contains(strings.Replace(strings.ToLower(user), "-stratio", "", -1), ldapUsers) {
-			log.Debugln("Wrong user founded:", user)
-			if !contains(strings.Replace(strings.ToLower(user), "-stratio", "", -1), config.GitHubIgnore) {
-				wrongUsers = append(wrongUsers, strings.Replace(user, "-stratio", "", -1))
-			}
+		if !contains(strings.Replace(strings.ToLower(user), strings.ToLower(config.GitHubSuf), "", -1),
+			ldapUsers) {
+				log.Debugln("Wrong user founded:", user)
+				if !contains(user, config.GitHubIgnore) {
+					wrongUsers = append(wrongUsers, user)
+				} else {
+					log.Debugln("User is in ignore list")
+				}
+			} else {
+			rightUsers = append(rightUsers, user)
 		}
 	}
-	return wrongUsers
+	return wrongUsers,rightUsers
 }
 
 func contains(user string, arrayUsers []string) bool{
 
 	for _, userList := range arrayUsers {
 		//log.Debugln("Compare " + user + " - " + userList)
-		if userList == user {
+		if strings.ToLower(userList) == strings.ToLower(user) {
 			return true
 		}
 	}
@@ -316,14 +344,23 @@ func contains(user string, arrayUsers []string) bool{
 }
 
 
-func sendMailReport(config Config, wrongUsers []string){
+func sendMailReport(config Config, wrongUsers []string, wrongUsersNoSufRecon []string, wrongUsersNoSufNoRecon []string){
 	log.Infoln("Send mail with wrong users")
 
 	log.Debugln("Preparing the message")
 	message := "Subject: Usuarios erroneos en GitHub\n\n" +
-		"Hola:\n\nLos siguientes usuarios en GitHub no cumplen con las directrices de Stratio y deberían" +
-		"ser eliminados inmediatamente:\n"
+		"Hola:\n\nLos usuarios en la organización de" + config.GitHubOrg + "GitHub de las siguientes listas no" +
+		"cumplen con las directrices y deberían ser eliminados inmediatamente:\n" +
+		"Usuarios reconocidos sin el sufijo:\n"
+	for _,user := range wrongUsersNoSufRecon {
+		message = message + "\t" + user + "\n"
+	}
+	message = message + "Usuarios con el sufijo no reconocidos:\n"
 	for _,user := range wrongUsers {
+		message = message + "\t" + user + "\n"
+	}
+	message = message + "Usuarios no reconocidos:\n"
+	for _,user := range wrongUsersNoSufNoRecon {
 		message = message + "\t" + user + "\n"
 	}
 	message = message + "\nUn saludo."
@@ -380,13 +417,27 @@ func main() {
 	usersLdap := getUsersLdap(config)
 	usersGitHub := getUsersGitHub(config)
 
-	wrongUsers := compareUsersLists(config, usersLdap, usersGitHub)
+	wrongUsersNoSuf, rightUsers := checkExistSuf(config, usersGitHub)
+	wrongUsersNoSufNoRecon, wrongUsersNoSufRecon := compareUsersLists(config, usersLdap, wrongUsersNoSuf)
+
+	wrongUsers,_ := compareUsersLists(config, usersLdap, rightUsers)
 
 	if config.SMTPEnabled {
-		sendMailReport(config, wrongUsers)
+		sendMailReport(config, wrongUsers, wrongUsersNoSufRecon, wrongUsersNoSufNoRecon)
 	} else {
+		log.Warnln("SMTP disabled")
 		log.Warnln("The mail will not send")
+		log.Warnln("Usuarios reconocidos sin el sufijo:")
+		for _,user := range wrongUsersNoSufRecon {
+			log.Warnln("\t" + user)
+		}
+		log.Warnln("Usuarios con el sufijo no reconocidos:")
+		for _,user := range wrongUsers {
+			log.Warnln("\t" + user)
+		}
+		log.Warnln("Usuarios no reconocidos:")
+		for _,user := range wrongUsersNoSufNoRecon {
+			log.Warnln("\t" + user)
+		}
 	}
-
-
 }
