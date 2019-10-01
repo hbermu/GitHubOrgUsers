@@ -26,4 +26,13 @@ If you want a better log:
 ./GitHubUsersLDAP --log.level="debug"
 ```
 
+## Run with Docker
+You have a image on DockerHub to run this program with Docker. To do that you can run:
+```
+docker run -it -v /path/to/your/config/config.toml:/etc/GitHubUsersLDAP/config.toml hbermu/githubusersldap
+```
 
+Or with better log:
+```
+docker run -it -v /path/to/your/config/config.toml:/etc/GitHubUsersLDAP/config.toml hbermu/githubusersldap --log.level="debug"
+```
