@@ -1,5 +1,4 @@
 .vagrant/
 .idea/
 *.retry
-config_pro.toml
 GitHubUsersLDAP

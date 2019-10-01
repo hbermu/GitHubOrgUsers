@@ -27,7 +27,6 @@ host = "smtp.gmail.com"
 port = 587
 user = "user@gmail.com"
 password = ""
-skip_verify = true
 from_address = "user@gmail.com"
 from_name = "User"
 to_addresses = "user@gmail.com"
