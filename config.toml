@@ -16,7 +16,7 @@ search_attribute = "cn"
 token = ""
 org = ""
 suf = ""
-ignore = ""
+ignore = "" # Format -> "item1,item2,item3..."
 
 ###########################
 ########## SMTP  ##########
@@ -29,4 +29,4 @@ user = "user@gmail.com"
 password = ""
 from_address = "user@gmail.com"
 from_name = "User"
-to_addresses = "user@gmail.com"
+to_addresses = "user@gmail.com,user2@gmail.com" # Format -> "item1,item2,item3..."
