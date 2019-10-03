@@ -37,7 +37,7 @@ import (
 // Default Params
 const (
 	program 				= "Github_Users_LDAP" // For Prometheus metrics.
-	Version   				= "0.0.1"
+	Version   				= "0.2"
 	Revision  				= "01/10/2019"
 	Branch    				= "master"
 	BuildUser 				= "hbermu"
@@ -45,6 +45,7 @@ const (
 	defaultConfigPath 		= "./config.toml"
 
 	// LDAP Default Config
+	defaultLdapEnabled     	= false
 	defaultLdapUser     	= "cn=admin,dc=org,dc=com"
 	defaultLdapPassword 	= "admin"
 	defaultLdapHostname 	= "localhost"
@@ -66,7 +67,9 @@ const (
 	defaultGitHubOrg		= "org"
 	defaultGitHubSuf		= ""
 	defaultGitHubIgnore		= ""	// Format -> "item1,item2,item3,..."
-	GitHubApiPath			= "/orgs/:org/members"
+	defaultGitHubDelete		= false
+	GitHubApiPathGetUsers	= "/orgs/:org/members"
+	GitHubApiPathRemoveUser	= "/orgs/:org/members/:username"
 	GitHubApiUrl			= "https://api.github.com"
 
 	// SMTP Default Config
@@ -101,8 +104,10 @@ type Config struct {
 	GitHubOrg,
 	GitHubSuf		string
 	GitHubIgnore  []string
+	GitHubDelete	bool
 
 	// LDAP Config
+	LdapEnabled		bool
 	LdapUser,
 	LdapPassword,
 	LdapHostname 	string
@@ -118,6 +123,7 @@ func readConfig(configPath string) Config{
 	log.Debugln("Setting viper defaults Params")
 	// Defaults
 	//		LDAP
+	viper.SetDefault("ldap.enabled", 		defaultLdapEnabled)
 	viper.SetDefault("ldap.user", 			defaultLdapUser)
 	viper.SetDefault("ldap.password", 		defaultLdapPassword)
 	viper.SetDefault("ldap.hostname", 		defaultLdapHostname)
@@ -130,6 +136,7 @@ func readConfig(configPath string) Config{
 	viper.SetDefault("github.org",			defaultGitHubOrg)
 	viper.SetDefault("github.suf",			defaultGitHubSuf)
 	viper.SetDefault("github.ignore",		defaultGitHubIgnore)
+	viper.SetDefault("github.delete",		defaultGitHubDelete)
 
 	//		SMTP
 	viper.SetDefault("smtp.enabled",		defaultSMTPEnabled)
@@ -175,6 +182,8 @@ func readConfig(configPath string) Config{
 		GitHubOrg:     	 viper.GetString	("github.org"),
 		GitHubSuf:     	 viper.GetString	("github.suf"),
 		GitHubIgnore:    strings.Split(viper.GetString	("github.ignore"), ","),
+		GitHubDelete:    viper.GetBool		("github.delete"),
+		LdapEnabled:     viper.GetBool		("ldap.enabled"),
 		LdapUser:        viper.GetString	("ldap.user"),
 		LdapPassword:    viper.GetString	("ldap.password"),
 		LdapHostname:    viper.GetString	("ldap.hostname"),
@@ -258,7 +267,7 @@ func getUsersGitHub(config Config) []string{
 }
 
 func gitHubRequest(config Config, page int) (string, bool){
-	apiUrl := GitHubApiUrl + strings.Replace(GitHubApiPath, ":org", config.GitHubOrg, -1 )
+	apiUrl := GitHubApiUrl + strings.Replace(GitHubApiPathGetUsers, ":org", config.GitHubOrg, -1 )
 
 	if page > 1 {
 		apiUrl = apiUrl + "?page=" + strconv.Itoa(page)
@@ -363,26 +372,13 @@ func contains(user string, arrayUsers []string) bool{
 }
 
 
-func sendMailReport(config Config, wrongUsers []string, wrongUsersNoSufRecon []string, wrongUsersNoSufNoRecon []string){
-	log.Infoln("Send mail with wrong users")
+func sendMailReport(config Config, message string, subject string){
+	log.Infoln("Send mail")
 
 	log.Debugln("Preparing the message")
-	message := "Subject: Usuarios erroneos en GitHub\n\n" +
-		"Hola:\n\nLos usuarios en la organización de" + config.GitHubOrg + "GitHub de las siguientes listas no" +
-		"cumplen con las directrices y deberían ser eliminados inmediatamente:\n" +
-		"Usuarios reconocidos sin el sufijo:\n"
-	for _,user := range wrongUsersNoSufRecon {
-		message = message + "\t" + user + "\n"
-	}
-	message = message + "Usuarios con el sufijo no reconocidos:\n"
-	for _,user := range wrongUsers {
-		message = message + "\t" + user + "\n"
-	}
-	message = message + "Usuarios no reconocidos:\n"
-	for _,user := range wrongUsersNoSufNoRecon {
-		message = message + "\t" + user + "\n"
-	}
+	message = subject + message
 	message = message + "\nUn saludo."
+
 	log.Debugln("Message to sent:", message)
 
 	log.Debugln("Prepare the authentication")
@@ -403,6 +399,53 @@ func sendMailReport(config Config, wrongUsers []string, wrongUsersNoSufRecon []s
 		log.Warnln(err)
 	} else {
 		log.Infoln("Mail sended!")
+	}
+}
+
+func deleteUsersGitHub(config Config, users []string) {
+	log.Infoln("Preparing to remove users from GitHub")
+
+	subject := "Subject: Usuarios eliminados de GitHub\n\n"
+	message := "Los siguientes usuarios se han borrado:\n"
+
+	// Replace org
+	apiUrl := GitHubApiUrl + strings.Replace(GitHubApiPathRemoveUser, ":org", config.GitHubOrg, -1 )
+
+	for _,user := range users {
+		// Replace user
+		apiUrl = strings.Replace(apiUrl, ":username", user, -1)
+
+		log.Debugln("Attack to url:", apiUrl)
+		log.Debugln("Prepare the request")
+		req, err := http.NewRequest(http.MethodDelete, apiUrl, nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if config.GitHubToken != defaultGitHubToken {
+			req.Header.Add("Authorization", "token "+config.GitHubToken)
+		} else {
+			log.Warnln("Using empty GitHub Token")
+		}
+		req.Header.Add("Accept", "application/vnd.github.v3+json")
+
+		log.Debugln("Create new http client")
+		client := http.DefaultClient
+		log.Debugln("Do the request")
+		_, err = client.Do(req)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		message = message + "\t" + user + "\n"
+	}
+
+	if config.SMTPEnabled {
+		sendMailReport(config, message, subject)
+	} else {
+		log.Warnln("SMTP disabled")
+		log.Warnln("The mail will not send")
+		log.Warnln(message)
 	}
 }
 
@@ -430,32 +473,45 @@ func main() {
 
 	config := readConfig(*configPath)
 
-	usersLdap := getUsersLdap(config)
+	var companyUsers []string
+	if config.LdapEnabled {
+		companyUsers = getUsersLdap(config)
+	}
+
 	usersGitHub := getUsersGitHub(config)
 
 	wrongUsersNoSuf, rightUsers := checkExistSuf(config, usersGitHub)
-	wrongUsersNoSufNoRecon, wrongUsersNoSufRecon := compareUsersLists(config, usersLdap, wrongUsersNoSuf)
+	wrongUsersNoSufNoRecon, wrongUsersNoSufRecon := compareUsersLists(config, companyUsers, wrongUsersNoSuf)
 
-	wrongUsers,_ := compareUsersLists(config, usersLdap, rightUsers)
+	wrongUsers,_ := compareUsersLists(config, companyUsers, rightUsers)
+
+	subject := "Subject: Usuarios erroneos en GitHub\n\n"
+	message := "Hola:\n\nLos usuarios en la organización de" + config.GitHubOrg + "GitHub de las siguientes listas no" +
+		"cumplen con las directrices y deberían ser eliminados inmediatamente:\n" +
+		"Usuarios reconocidos sin el sufijo:\n"
+	for _,user := range wrongUsersNoSufRecon {
+		message = message + "\t" + user + "\n"
+	}
+	message = message + "Usuarios con el sufijo no reconocidos:\n"
+	for _,user := range wrongUsers {
+		message = message + "\t" + user + "\n"
+	}
+	message = message + "Usuarios no reconocidos:\n"
+	for _,user := range wrongUsersNoSufNoRecon {
+		message = message + "\t" + user + "\n"
+	}
 
 	if config.SMTPEnabled {
-		sendMailReport(config, wrongUsers, wrongUsersNoSufRecon, wrongUsersNoSufNoRecon)
+		sendMailReport(config, message, subject)
 	} else {
 		log.Warnln("SMTP disabled")
 		log.Warnln("The mail will not send")
-
-		message :=  "Usuarios reconocidos sin el sufijo:\n"
-		for _,user := range wrongUsersNoSufRecon {
-			message = message + "\t" + user + "\n"
-		}
-		message = message + "\t" + "Usuarios con el sufijo no reconocidos:\n"
-		for _,user := range wrongUsers {
-			message = message + "\t" + user + "\n"
-		}
-		message = message + "\t" + "Usuarios no reconocidos:\n"
-		for _,user := range wrongUsersNoSufNoRecon {
-			message = message + "\t" + user + "\n"
-		}
 		log.Warnln(message)
+	}
+
+	if config.GitHubDelete {
+		deleteUsersGitHub(config, wrongUsers)
+	} else {
+		log.Warnln("Delete GitHub users disabled")
 	}
 }

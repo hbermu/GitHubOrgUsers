@@ -2,6 +2,7 @@
 ########## LDAP  ##########
 ###########################
 [ldap]
+enabled = false
 user = "cn=admin,dc=org,dc=com"
 password = "admin"
 hostname = "localhost"
@@ -17,6 +18,7 @@ token = ""
 org = ""
 suf = ""
 ignore = "" # Format -> "item1,item2,item3..."
+delete = false
 
 ###########################
 ########## SMTP  ##########
