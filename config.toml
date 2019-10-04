@@ -11,6 +11,15 @@ base_dn = "dc=org,dc=com"
 search_attribute = "cn"
 
 ###########################
+########## SQLite #########
+###########################
+[sqlite]
+enabled = true
+path = "./sqlite.db"
+user = ""
+password = ""
+
+###########################
 ########## GITHUB #########
 ###########################
 [github]
