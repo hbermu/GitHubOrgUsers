@@ -38,12 +38,12 @@ import (
 
 // Default Params
 const (
-	program           = "Github_Users_LDAP" // For Prometheus metrics.
-	Version           = "0.2"
-	Revision          = "01/10/2019"
+	program           = "Github_Org_Users"
+	Version           = "0.3"
+	Revision          = "04/10/2019"
 	Branch            = "master"
 	BuildUser         = "hbermu"
-	BuildDate         = "01/10/2019"
+	BuildDate         = "04/10/2019"
 	defaultConfigPath = "./config.toml"
 
 	// LDAP Default Config
@@ -591,7 +591,7 @@ func main() {
 		}
 
 		if config.GitHubDelete {
-			//deleteUsersGitHub(config, wrongUsers)
+			deleteUsersGitHub(config, wrongUsers)
 		} else {
 			log.Warnln("Delete GitHub users disabled")
 		}

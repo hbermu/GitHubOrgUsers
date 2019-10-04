@@ -17,3 +17,8 @@ Viper
 https://github.com/alecthomas/kingpin
 Copyright 2014 Steve Francia
 Licensed under the MIT License
+
+go-sqlite3
+https://github.com/mattn/go-sqlite3
+Copyright 2014 Yasuhiro Matsumoto
+Licensed under the MIT License
