@@ -14,7 +14,7 @@ search_attribute = "cn"
 ########## SQLite #########
 ###########################
 [sqlite]
-enabled = true
+enabled = false
 path = "./sqlite.db"
 user = ""
 password = ""

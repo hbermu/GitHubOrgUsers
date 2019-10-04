@@ -2,7 +2,7 @@ FROM golang:1.13.1-alpine3.10 AS builder
 
 # Install requisites
 RUN apk update && \
-    apk add gitgcc musl-dev
+    apk add git gcc musl-dev
 
 # Download repo and dependencies
 RUN go get /go/src/github.com/hbermu/GitHubOrgUsers
@@ -30,4 +30,5 @@ COPY --from=builder /go/bin/GitHubOrgUsers /bin/GitHubOrgUsers
 
 # Directory to use
 WORKDIR /etc/GitHubOrgUsers
-ENTRYPOINT ["/bin/GitHubOrgUsers", "--config=/etc/GitHubOrgUsers/config.toml"]
+#ENTRYPOINT ["/bin/GitHubOrgUsers", "help /etc/GitHubOrgUsers/config.toml"]
+ENTRYPOINT ["/bin/GitHubOrgUsers"]
