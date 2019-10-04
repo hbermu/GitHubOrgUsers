@@ -1,4 +1,3 @@
-
 //Copyright 2019 Hector Bermudez Perez
 //Licensed to the Apache Software Foundation (ASF) under one
 //or more contributor license agreements.  See the NOTICE file
@@ -39,134 +38,132 @@ import (
 
 // Default Params
 const (
-	program 				= "Github_Users_LDAP" // For Prometheus metrics.
-	Version   				= "0.2"
-	Revision  				= "01/10/2019"
-	Branch    				= "master"
-	BuildUser 				= "hbermu"
-	BuildDate 				= "01/10/2019"
-	defaultConfigPath 		= "./config.toml"
+	program           = "Github_Users_LDAP" // For Prometheus metrics.
+	Version           = "0.2"
+	Revision          = "01/10/2019"
+	Branch            = "master"
+	BuildUser         = "hbermu"
+	BuildDate         = "01/10/2019"
+	defaultConfigPath = "./config.toml"
 
 	// LDAP Default Config
-	defaultLdapEnabled     	= false
-	defaultLdapUser     	= "cn=admin,dc=org,dc=com"
-	defaultLdapPassword 	= "admin"
-	defaultLdapHostname 	= "localhost"
-	defaultLdapPort     	= 389
-	defaultLdapBaseDN		= "dc=org,dc=com"
-	defaultLdapSearchAttribute	= "cn"
+	defaultLdapEnabled         = false
+	defaultLdapUser            = "cn=admin,dc=org,dc=com"
+	defaultLdapPassword        = "admin"
+	defaultLdapHostname        = "localhost"
+	defaultLdapPort            = 389
+	defaultLdapBaseDN          = "dc=org,dc=com"
+	defaultLdapSearchAttribute = "cn"
 	//		Operation Choices
-	ScopeBaseObject   		= 0
-	ScopeSingleLevel  		= 1
-	ScopeWholeSubtree 		= 2
+	ScopeBaseObject   = 0
+	ScopeSingleLevel  = 1
+	ScopeWholeSubtree = 2
 	//		Scope Choices
-	NeverDerefAliases   	= 0
-	DerefInSearching    	= 1
-	DerefFindingBaseObj 	= 2
-	DerefAlways         	= 3
+	NeverDerefAliases   = 0
+	DerefInSearching    = 1
+	DerefFindingBaseObj = 2
+	DerefAlways         = 3
 
 	// SQLite Default Config
-	defaultSQLitePath       = "./sqlite.db"
-	defaultSQLiteUser       = ""
-	defaultSQLitePassword   = ""
+	defaultSQLiteEnabled  = true
+	defaultSQLitePath     = "./sqlite.db"
+	defaultSQLiteUser     = ""
+	defaultSQLitePassword = ""
 
 	// GitHub Default Config
-	defaultGitHubToken 		= ""
-	defaultGitHubOrg		= "org"
-	defaultGitHubSuf		= ""
-	defaultGitHubIgnore		= ""	// Format -> "item1,item2,item3,..."
-	defaultGitHubDelete		= false
-	GitHubApiPathGetUsers	= "/orgs/:org/members"
-	GitHubApiPathRemoveUser	= "/orgs/:org/members/:username"
-	GitHubApiUrl			= "https://api.github.com"
+	defaultGitHubToken      = ""
+	defaultGitHubOrg        = "org"
+	defaultGitHubSuf        = ""
+	defaultGitHubIgnore     = "" // Format -> "item1,item2,item3,..."
+	defaultGitHubDelete     = false
+	GitHubApiPathGetUsers   = "/orgs/:org/members"
+	GitHubApiPathRemoveUser = "/orgs/:org/members/:username"
+	GitHubApiUrl            = "https://api.github.com"
 
 	// SMTP Default Config
-	defaultSMTPEnabled 		= false
-	defaultSMTPHost 		= "smtp.gmail.com"
-	defaultSMTPPort 		= 587
-	defaultSMTPUser 		= "user@gmail.com"
-	defaultSMTPPassword 	= ""
-	defaultSMTPSkipVerify 	= true
-	defaultSMTPFromAddress 	= "user@gmail.com"
-	defaultSMTPFromName 	= "User"
-	defaultSMTPToAddresses  = ""
+	defaultSMTPEnabled     = false
+	defaultSMTPHost        = "smtp.gmail.com"
+	defaultSMTPPort        = 587
+	defaultSMTPUser        = "user@gmail.com"
+	defaultSMTPPassword    = ""
+	defaultSMTPSkipVerify  = true
+	defaultSMTPFromAddress = "user@gmail.com"
+	defaultSMTPFromName    = "User"
+	defaultSMTPToAddresses = ""
 )
 
-
-
 type Config struct {
-
 	// SMTP Config
-	SMTPEnabled		bool
-	SMTPHost		string
-	SMTPPort		int
+	SMTPEnabled bool
+	SMTPHost    string
+	SMTPPort    int
 	SMTPUser,
-	SMTPPassword	string
-	SMTPSkipVerify	bool
+	SMTPPassword string
+	SMTPSkipVerify bool
 	SMTPFromAddress,
-	SMTPFromName	string
-	SMTPToAddresses	[]string
+	SMTPFromName string
+	SMTPToAddresses []string
 
+	SQLiteEnabled bool
 	SQLitePath,
 	SQLiteUser,
-	SQLitePassword  string
+	SQLitePassword string
 
 	// GitHub Config
 	GitHubToken,
 	GitHubOrg,
-	GitHubSuf		string
-	GitHubIgnore  []string
-	GitHubDelete	bool
+	GitHubSuf string
+	GitHubIgnore []string
+	GitHubDelete bool
 
 	// LDAP Config
-	LdapEnabled		bool
+	LdapEnabled bool
 	LdapUser,
 	LdapPassword,
-	LdapHostname 	string
-	LdapPort 		int
-	LdapBaseDN		string
-	LdapSearchAttribute  string
+	LdapHostname string
+	LdapPort            int
+	LdapBaseDN          string
+	LdapSearchAttribute string
 }
 
-func readConfig(configPath string) Config{
+func readConfig(configPath string) Config {
 
 	log.Infoln("Reading config file ", configPath)
 
 	log.Debugln("Setting viper defaults Params")
 	// Defaults
 	//		LDAP
-	viper.SetDefault("ldap.enabled", 		defaultLdapEnabled)
-	viper.SetDefault("ldap.user", 			defaultLdapUser)
-	viper.SetDefault("ldap.password", 		defaultLdapPassword)
-	viper.SetDefault("ldap.hostname", 		defaultLdapHostname)
-	viper.SetDefault("ldap.port", 			defaultLdapPort)
-	viper.SetDefault("ldap.base_dn", 		defaultLdapBaseDN)
+	viper.SetDefault("ldap.enabled", defaultLdapEnabled)
+	viper.SetDefault("ldap.user", defaultLdapUser)
+	viper.SetDefault("ldap.password", defaultLdapPassword)
+	viper.SetDefault("ldap.hostname", defaultLdapHostname)
+	viper.SetDefault("ldap.port", defaultLdapPort)
+	viper.SetDefault("ldap.base_dn", defaultLdapBaseDN)
 	viper.SetDefault("ldap.search_attribute", defaultLdapSearchAttribute)
 
 	//		SQLite
-	viper.SetDefault("sqlite.path", 		defaultSQLitePath)
-	viper.SetDefault("sqlite.user", 		defaultSQLiteUser)
-	viper.SetDefault("sqlite.password", 		defaultSQLitePassword)
-
+	viper.SetDefault("sqlite.enabled", defaultSQLiteEnabled)
+	viper.SetDefault("sqlite.path", defaultSQLitePath)
+	viper.SetDefault("sqlite.user", defaultSQLiteUser)
+	viper.SetDefault("sqlite.password", defaultSQLitePassword)
 
 	// 		GitHub
-	viper.SetDefault("github.token",		defaultGitHubToken)
-	viper.SetDefault("github.org",			defaultGitHubOrg)
-	viper.SetDefault("github.suf",			defaultGitHubSuf)
-	viper.SetDefault("github.ignore",		defaultGitHubIgnore)
-	viper.SetDefault("github.delete",		defaultGitHubDelete)
+	viper.SetDefault("github.token", defaultGitHubToken)
+	viper.SetDefault("github.org", defaultGitHubOrg)
+	viper.SetDefault("github.suf", defaultGitHubSuf)
+	viper.SetDefault("github.ignore", defaultGitHubIgnore)
+	viper.SetDefault("github.delete", defaultGitHubDelete)
 
 	//		SMTP
-	viper.SetDefault("smtp.enabled",		defaultSMTPEnabled)
-	viper.SetDefault("smtp.host",			defaultSMTPHost)
-	viper.SetDefault("smtp.port",			defaultSMTPPort)
-	viper.SetDefault("smtp.user",			defaultSMTPUser)
-	viper.SetDefault("smtp.password",		defaultSMTPPassword)
-	viper.SetDefault("smtp.skip_verify",	defaultSMTPSkipVerify)
-	viper.SetDefault("smtp.from_address",	defaultSMTPFromAddress)
-	viper.SetDefault("smtp.from_name",		defaultSMTPFromName)
-	viper.SetDefault("smtp.to_addresses",	defaultSMTPToAddresses)
-
+	viper.SetDefault("smtp.enabled", defaultSMTPEnabled)
+	viper.SetDefault("smtp.host", defaultSMTPHost)
+	viper.SetDefault("smtp.port", defaultSMTPPort)
+	viper.SetDefault("smtp.user", defaultSMTPUser)
+	viper.SetDefault("smtp.password", defaultSMTPPassword)
+	viper.SetDefault("smtp.skip_verify", defaultSMTPSkipVerify)
+	viper.SetDefault("smtp.from_address", defaultSMTPFromAddress)
+	viper.SetDefault("smtp.from_name", defaultSMTPFromName)
+	viper.SetDefault("smtp.to_addresses", defaultSMTPToAddresses)
 
 	// File Config without extension
 	// ---- Split "file.ext" | "ext" -> "file"
@@ -179,7 +176,7 @@ func readConfig(configPath string) Config{
 	// Config File Paths
 	log.Debugln("Setting all config paths")
 	viper.AddConfigPath(path.Dir(configPath))
-	viper.AddConfigPath(".")					// Always search in ./
+	viper.AddConfigPath(".") // Always search in ./
 
 	err := viper.ReadInConfig()
 	if err != nil {
@@ -187,38 +184,38 @@ func readConfig(configPath string) Config{
 	}
 
 	return Config{
-		SMTPEnabled:     viper.GetBool		("smtp.enabled"),
-		SMTPHost:        viper.GetString	("smtp.host"),
-		SMTPPort:        viper.GetInt		("smtp.port"),
-		SMTPUser:        viper.GetString	("smtp.user"),
-		SMTPPassword:    viper.GetString	("smtp.password"),
-		SMTPSkipVerify:  viper.GetBool		("smtp.skip_verify"),
-		SMTPFromAddress: viper.GetString	("smtp.from_address"),
-		SMTPFromName:    viper.GetString	("smtp.from_name"),
-		SMTPToAddresses: strings.Split(viper.GetString	("smtp.to_addresses"), ","),
-		GitHubToken:     viper.GetString	("github.token"),
-		GitHubOrg:     	 viper.GetString	("github.org"),
-		GitHubSuf:     	 viper.GetString	("github.suf"),
-		GitHubIgnore:    strings.Split(viper.GetString	("github.ignore"), ","),
-		GitHubDelete:    viper.GetBool		("github.delete"),
-		SQLitePath:      viper.GetString	("sqlite.path"),
-		SQLiteUser:      viper.GetString	("sqlite.user"),
-		SQLitePassword:  viper.GetString	("sqlite.password"),
-		LdapEnabled:     viper.GetBool		("ldap.enabled"),
-		LdapUser:        viper.GetString	("ldap.user"),
-		LdapPassword:    viper.GetString	("ldap.password"),
-		LdapHostname:    viper.GetString	("ldap.hostname"),
-		LdapPort:        viper.GetInt		("ldap.port"),
-		LdapBaseDN:		 viper.GetString	("ldap.base_dn"),
+		SMTPEnabled:         viper.GetBool("smtp.enabled"),
+		SMTPHost:            viper.GetString("smtp.host"),
+		SMTPPort:            viper.GetInt("smtp.port"),
+		SMTPUser:            viper.GetString("smtp.user"),
+		SMTPPassword:        viper.GetString("smtp.password"),
+		SMTPSkipVerify:      viper.GetBool("smtp.skip_verify"),
+		SMTPFromAddress:     viper.GetString("smtp.from_address"),
+		SMTPFromName:        viper.GetString("smtp.from_name"),
+		SMTPToAddresses:     strings.Split(viper.GetString("smtp.to_addresses"), ","),
+		GitHubToken:         viper.GetString("github.token"),
+		GitHubOrg:           viper.GetString("github.org"),
+		GitHubSuf:           viper.GetString("github.suf"),
+		GitHubIgnore:        strings.Split(viper.GetString("github.ignore"), ","),
+		GitHubDelete:        viper.GetBool("github.delete"),
+		SQLiteEnabled:       viper.GetBool("sqlite.enabled"),
+		SQLitePath:          viper.GetString("sqlite.path"),
+		SQLiteUser:          viper.GetString("sqlite.user"),
+		SQLitePassword:      viper.GetString("sqlite.password"),
+		LdapEnabled:         viper.GetBool("ldap.enabled"),
+		LdapUser:            viper.GetString("ldap.user"),
+		LdapPassword:        viper.GetString("ldap.password"),
+		LdapHostname:        viper.GetString("ldap.hostname"),
+		LdapPort:            viper.GetInt("ldap.port"),
+		LdapBaseDN:          viper.GetString("ldap.base_dn"),
 		LdapSearchAttribute: viper.GetString("ldap.search_attribute"),
 	}
 }
 
-
-func getUsersLdap(config Config)  []string{
+func getUsersLdap(config Config) []string {
 	log.Info("Getting users form ldap")
 
-	log.Debugln("Connect to LDAP server: " + config.LdapHostname + ":" + strconv.Itoa(config.LdapPort) )
+	log.Debugln("Connect to LDAP server: " + config.LdapHostname + ":" + strconv.Itoa(config.LdapPort))
 	// Bind with a read only user
 	l, err := ldap.Dial("tcp", fmt.Sprintf("%s:%d", config.LdapHostname, config.LdapPort))
 	checkError(err)
@@ -235,10 +232,10 @@ func getUsersLdap(config Config)  []string{
 	log.Debugln("Searching in Base DN: ", config.LdapBaseDN)
 	log.Debugln("Searching the Attribute: ", config.LdapSearchAttribute)
 	searchRequest := ldap.NewSearchRequest(
-		config.LdapBaseDN, 								// The base dn to search
+		config.LdapBaseDN, // The base dn to search
 		ScopeWholeSubtree, NeverDerefAliases, 0, 0, false,
-		"(&(objectClass=organizationalPerson))", 	// The filter to apply
-		[]string{config.LdapSearchAttribute},			// A list attributes to retrieve
+		"(&(objectClass=organizationalPerson))", // The filter to apply
+		[]string{config.LdapSearchAttribute},    // A list attributes to retrieve
 		nil,
 	)
 
@@ -258,7 +255,7 @@ func getUsersLdap(config Config)  []string{
 	return ldapUsers
 }
 
-func getUsersSQLite(config Config) []string{
+func getUsersSQLite(config Config) []string {
 	log.Info("Getting users form SQLite")
 
 	sqliteUsers := make([]string, 0)
@@ -279,6 +276,10 @@ func getUsersSQLite(config Config) []string{
 		log.Debugln("User getted:", username)
 	}
 
+	log.Debugln("Closing DB")
+	err = db.Close()
+	checkError(err)
+
 	return sqliteUsers
 }
 
@@ -289,29 +290,32 @@ func createSQLSchema(path string) {
 		log.Warnln("Using default SQLite path")
 	}
 
-	log.Debugln("Starting SQLite connection")
+	log.Debugln("Creating SQLite file")
 	db, err := sql.Open("sqlite3", path)
 	checkError(err)
-	defer db.Close()
 
 	sqlStmt := `
 	create table github_users (username text not null primary key, mail text not null, comment text);
 	`
+	log.Debugln("Prepare seq:", sqlStmt)
 
-	log.Infoln("SQLite created on", path)
 	_, err = db.Exec(sqlStmt)
 	checkError(err)
+	log.Infoln("SQLite created on", path)
 
+	log.Debugln("Closing DB")
+	err = db.Close()
+	checkError(err)
 }
 
-func getUsersGitHub(config Config) []string{
+func getUsersGitHub(config Config) []string {
 	log.Info("Getting users form GitHub")
 
 	var last = false
 	var page = 1
 	gitHubUsers := make([]string, 0)
 
-	for !last{
+	for !last {
 		respBodyString := ""
 		respBodyString, last = gitHubRequest(config, page)
 		page = page + 1
@@ -327,8 +331,8 @@ func getUsersGitHub(config Config) []string{
 
 }
 
-func gitHubRequest(config Config, page int) (string, bool){
-	apiUrl := GitHubApiUrl + strings.Replace(GitHubApiPathGetUsers, ":org", config.GitHubOrg, -1 )
+func gitHubRequest(config Config, page int) (string, bool) {
+	apiUrl := GitHubApiUrl + strings.Replace(GitHubApiPathGetUsers, ":org", config.GitHubOrg, -1)
 
 	if page > 1 {
 		apiUrl = apiUrl + "?page=" + strconv.Itoa(page)
@@ -360,7 +364,7 @@ func gitHubRequest(config Config, page int) (string, bool){
 	log.Debugln("Close the response body")
 	defer resp.Body.Close()
 
-	if strings.Contains(string(body), "documentation_url"){
+	if strings.Contains(string(body), "documentation_url") {
 		log.Fatal(string(body))
 	}
 
@@ -369,14 +373,14 @@ func gitHubRequest(config Config, page int) (string, bool){
 
 }
 
-func checkExistSuf(config Config, githubUsers []string) ([]string, []string){
+func checkExistSuf(config Config, githubUsers []string) ([]string, []string) {
 	log.Infoln("Check if all users have the right suffix")
 
 	wrongUsers := make([]string, 0)
 	rightUsers := make([]string, 0)
 
-	for _,user := range githubUsers {
-		if !strings.Contains(strings.ToLower(user), strings.ToLower(config.GitHubSuf)){
+	for _, user := range githubUsers {
+		if !strings.Contains(strings.ToLower(user), strings.ToLower(config.GitHubSuf)) {
 			log.Debugln("User without suffix founded:", user)
 
 			if !contains(user, config.GitHubIgnore) {
@@ -389,33 +393,33 @@ func checkExistSuf(config Config, githubUsers []string) ([]string, []string){
 		}
 	}
 
-	return wrongUsers,rightUsers
+	return wrongUsers, rightUsers
 }
 
-func compareUsersLists(config Config, ldapUsers []string, githubUsers []string) ([]string, []string){
+func compareUsersLists(config Config, ldapUsers []string, githubUsers []string) ([]string, []string) {
 	log.Info("Comparing users from GitHub and LDAP")
 
 	wrongUsers := make([]string, 0)
 	rightUsers := make([]string, 0)
 
-	for _,user := range githubUsers {
+	for _, user := range githubUsers {
 
 		if !contains(strings.Replace(strings.ToLower(user), strings.ToLower(config.GitHubSuf), "", -1),
 			ldapUsers) {
-				log.Debugln("Wrong user founded:", user)
-				if !contains(user, config.GitHubIgnore) {
-					wrongUsers = append(wrongUsers, user)
-				} else {
-					log.Debugln("User is in ignore list")
-				}
+			log.Debugln("Wrong user founded:", user)
+			if !contains(user, config.GitHubIgnore) {
+				wrongUsers = append(wrongUsers, user)
 			} else {
+				log.Debugln("User is in ignore list")
+			}
+		} else {
 			rightUsers = append(rightUsers, user)
 		}
 	}
-	return wrongUsers,rightUsers
+	return wrongUsers, rightUsers
 }
 
-func contains(user string, arrayUsers []string) bool{
+func contains(user string, arrayUsers []string) bool {
 
 	for _, userList := range arrayUsers {
 		//log.Debugln("Compare " + user + " - " + userList)
@@ -426,8 +430,7 @@ func contains(user string, arrayUsers []string) bool{
 	return false
 }
 
-
-func sendMailReport(config Config, message string, subject string){
+func sendMailReport(config Config, message string, subject string) {
 	log.Infoln("Send mail")
 
 	log.Debugln("Preparing the message")
@@ -464,9 +467,9 @@ func deleteUsersGitHub(config Config, users []string) {
 	message := "Los siguientes usuarios se han borrado:\n"
 
 	// Replace org
-	apiUrl := GitHubApiUrl + strings.Replace(GitHubApiPathRemoveUser, ":org", config.GitHubOrg, -1 )
+	apiUrl := GitHubApiUrl + strings.Replace(GitHubApiPathRemoveUser, ":org", config.GitHubOrg, -1)
 
-	for _,user := range users {
+	for _, user := range users {
 		// Replace user
 		apiUrl = strings.Replace(apiUrl, ":username", user, -1)
 
@@ -500,27 +503,25 @@ func deleteUsersGitHub(config Config, users []string) {
 	}
 }
 
-func checkError(err error){
+func checkError(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 func main() {
-	version.Revision 	= Revision
-	version.Branch 		= Branch
-	version.BuildUser	= BuildUser
-	version.BuildDate	= BuildDate
-	version.Version		= Version
+	version.Revision = Revision
+	version.Branch = Branch
+	version.BuildUser = BuildUser
+	version.BuildDate = BuildDate
+	version.Version = Version
 
 	var (
-
-		createSQLite	= kingpin.Command("create_db", "Create new SQLite Database")
+		createSQLite     = kingpin.Command("create_db", "Create new SQLite Database")
 		createSQLitePath = createSQLite.Arg("sqlite path", "Path to create the SQLite DB").Default(defaultSQLitePath).String()
 
-		start			= kingpin.Command("start", "Start to compare Users with GitHub")
-		configPath		= start.Arg("config path", "Config file path").Default(defaultConfigPath).String()
-
+		start      = kingpin.Command("start", "Start to compare Users with GitHub")
+		configPath = start.Arg("config path", "Config file path").Default(defaultConfigPath).String()
 	)
 
 	// Check flags
@@ -529,7 +530,7 @@ func main() {
 	kingpin.HelpFlag.Short('h')
 
 	// Log Start
-	log.Infoln("Starting " + program + " ", version.Info())
+	log.Infoln("Starting "+program+" ", version.Info())
 	log.Infoln("Build context", version.BuildContext())
 
 	switch kingpin.Parse() {
@@ -540,9 +541,22 @@ func main() {
 	case "start":
 		config := readConfig(*configPath)
 
-		var companyUsers []string
+		if !(config.LdapEnabled && config.SQLiteEnabled) {
+			log.Warnln("No source (sqlite and/or ldap) defined")
+			os.Exit(0)
+		}
+
+		companyUsers := make([]string, 0)
 		if config.LdapEnabled {
-			companyUsers = getUsersLdap(config)
+			for _, user := range  getUsersLdap(config){
+				companyUsers = append(companyUsers, user)
+			}
+		}
+
+		if config.SQLiteEnabled {
+			for _, user := range  getUsersSQLite(config){
+				companyUsers = append(companyUsers, user)
+			}
 		}
 
 		usersGitHub := getUsersGitHub(config)
@@ -550,21 +564,21 @@ func main() {
 		wrongUsersNoSuf, rightUsers := checkExistSuf(config, usersGitHub)
 		wrongUsersNoSufNoRecon, wrongUsersNoSufRecon := compareUsersLists(config, companyUsers, wrongUsersNoSuf)
 
-		wrongUsers,_ := compareUsersLists(config, companyUsers, rightUsers)
+		wrongUsers, _ := compareUsersLists(config, companyUsers, rightUsers)
 
 		subject := "Subject: Usuarios erroneos en GitHub\n\n"
 		message := "Hola:\n\nLos usuarios en la organización de" + config.GitHubOrg + "GitHub de las siguientes listas no" +
 			"cumplen con las directrices y deberían ser eliminados inmediatamente:\n" +
 			"Usuarios reconocidos sin el sufijo:\n"
-		for _,user := range wrongUsersNoSufRecon {
+		for _, user := range wrongUsersNoSufRecon {
 			message = message + "\t" + user + "\n"
 		}
 		message = message + "Usuarios con el sufijo no reconocidos:\n"
-		for _,user := range wrongUsers {
+		for _, user := range wrongUsers {
 			message = message + "\t" + user + "\n"
 		}
 		message = message + "Usuarios no reconocidos:\n"
-		for _,user := range wrongUsersNoSufNoRecon {
+		for _, user := range wrongUsersNoSufNoRecon {
 			message = message + "\t" + user + "\n"
 		}
 
@@ -577,7 +591,7 @@ func main() {
 		}
 
 		if config.GitHubDelete {
-			deleteUsersGitHub(config, wrongUsers)
+			//deleteUsersGitHub(config, wrongUsers)
 		} else {
 			log.Warnln("Delete GitHub users disabled")
 		}
