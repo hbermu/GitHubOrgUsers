@@ -24,11 +24,19 @@ RUN addgroup -S  comparator && \
     adduser -S -G comparator comparator
 
 # Create config path and copy example file
-RUN mkdir /etc/GitHubOrgUsers
-COPY config.toml /etc/GitHubOrgUsers/config.toml
-COPY --from=builder /go/bin/GitHubOrgUsers /bin/GitHubOrgUsers
+RUN mkdir /GitHubOrgUsers
+
+COPY config.toml /GitHubOrgUsers/config.toml
+RUN chmod 555 /GitHubOrgUsers/config.toml
+
+COPY --from=builder /go/bin/GitHubOrgUsers /GitHubOrgUsers/GitHubOrgUsers
+RUN chmod 777 /GitHubOrgUsers/GitHubOrgUsers
+
+RUN chown -R comparator:comparator /GitHubOrgUsers
 
 # Directory to use
-WORKDIR /etc/GitHubOrgUsers
-#ENTRYPOINT ["/bin/GitHubOrgUsers", "help /etc/GitHubOrgUsers/config.toml"]
-ENTRYPOINT ["/bin/GitHubOrgUsers"]
+WORKDIR /GitHubOrgUsers/
+
+USER comparator
+ENTRYPOINT ["/GitHubOrgUsers/GitHubOrgUsers"]
+#CMD ["start /etc/GitHubOrgUsers/config.toml"]
