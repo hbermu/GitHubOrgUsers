@@ -258,6 +258,11 @@ func getUsersLdap(config Config) []string {
 func getUsersSQLite(config Config) []string {
 	log.Info("Getting users form SQLite")
 
+	log.Debugln("Check if exist SQLite file")
+	_, err := os.Stat(config.SQLitePath)
+	checkError(err)
+
+
 	sqliteUsers := make([]string, 0)
 
 	log.Debugln("Starting SQLite connection")
