@@ -1,5 +1,5 @@
 # GitHubOrgUsers
-This little program get all users form GitHub organization and LDAP and compare (with a prefix) if all GitHub users are in LDAP.
+This little program get all users form GitHub organization and LDAP and compare (with a prefix) if all GitHub users are in LDAP or SQLite DB.
 
 ## How to get and build
  To get this bin (and all dependencies) you have to execute:
