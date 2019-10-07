@@ -573,22 +573,31 @@ func main() {
 
 		subject := "Subject: Usuarios erroneos en GitHub\n\n"
 		message := "Hola:\n\nLos usuarios en la organización de" + config.GitHubOrg + "GitHub de las siguientes listas no" +
-			"cumplen con las directrices y deberían ser eliminados inmediatamente:\n" +
-			"Usuarios reconocidos sin el sufijo:\n"
-		for _, user := range wrongUsersNoSufRecon {
-			message = message + "\t" + user + "\n"
-		}
-		message = message + "Usuarios con el sufijo no reconocidos:\n"
-		for _, user := range wrongUsers {
-			message = message + "\t" + user + "\n"
-		}
-		message = message + "Usuarios no reconocidos:\n"
-		for _, user := range wrongUsersNoSufNoRecon {
-			message = message + "\t" + user + "\n"
+			"cumplen con las directrices y deberían ser eliminados inmediatamente:\n"
+
+		if len(wrongUsersNoSufRecon) > 0 {
+			message = message + "Usuarios reconocidos sin el sufijo:\n"
+			for _, user := range wrongUsersNoSufRecon {
+				message = message + "\t" + user + "\n"
+			}
 		}
 
+		if len(wrongUsers) > 0 {
+			message = message + "Usuarios con el sufijo no reconocidos:\n"
+			for _, user := range wrongUsers {
+				message = message + "\t" + user + "\n"
+			}
+		}
+		if len(wrongUsersNoSufNoRecon) > 0 {
+			message = message + "Usuarios no reconocidos:\n"
+			for _, user := range wrongUsersNoSufNoRecon {
+				message = message + "\t" + user + "\n"
+			}
+		}
 		if config.SMTPEnabled {
-			sendMailReport(config, message, subject)
+			if len(wrongUsersNoSufRecon) > 0 || len(wrongUsers) > 0 || len(wrongUsersNoSufNoRecon) > 0 {
+				sendMailReport(config, message, subject)
+			}
 		} else {
 			log.Warnln("SMTP disabled")
 			log.Warnln("The mail will not send")
