@@ -546,7 +546,7 @@ func main() {
 	case "start":
 		config := readConfig(*configPath)
 
-		if !(config.LdapEnabled && config.SQLiteEnabled) {
+		if !(config.LdapEnabled || config.SQLiteEnabled) {
 			log.Warnln("No source (sqlite and/or ldap) defined")
 			os.Exit(0)
 		}
