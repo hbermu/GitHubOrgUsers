@@ -575,23 +575,27 @@ func main() {
 		message := "Hola:\n\nLos usuarios en la organización de" + config.GitHubOrg + "GitHub de las siguientes listas no" +
 			"cumplen con las directrices y deberían ser eliminados inmediatamente:\n"
 
+		usersToDelete := make([]string, 0)
+
 		if len(wrongUsersNoSufRecon) > 0 {
 			message = message + "Usuarios reconocidos sin el sufijo:\n"
 			for _, user := range wrongUsersNoSufRecon {
 				message = message + "\t" + user + "\n"
+				usersToDelete = append(usersToDelete, user)
 			}
 		}
-
 		if len(wrongUsers) > 0 {
 			message = message + "Usuarios con el sufijo no reconocidos:\n"
 			for _, user := range wrongUsers {
 				message = message + "\t" + user + "\n"
+				usersToDelete = append(usersToDelete, user)
 			}
 		}
 		if len(wrongUsersNoSufNoRecon) > 0 {
 			message = message + "Usuarios no reconocidos:\n"
 			for _, user := range wrongUsersNoSufNoRecon {
 				message = message + "\t" + user + "\n"
+				usersToDelete = append(usersToDelete, user)
 			}
 		}
 		if config.SMTPEnabled {
@@ -605,7 +609,7 @@ func main() {
 		}
 
 		if config.GitHubDelete {
-			deleteUsersGitHub(config, wrongUsers)
+			deleteUsersGitHub(config, usersToDelete)
 		} else {
 			log.Warnln("Delete GitHub users disabled")
 		}
