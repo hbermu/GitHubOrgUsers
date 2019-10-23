@@ -39,7 +39,7 @@ import (
 // Default Params
 const (
 	program           = "Github_Org_Users"
-	Version           = "0.3"
+	Version           = "0.3.1"
 	Revision          = "04/10/2019"
 	Branch            = "master"
 	BuildUser         = "hbermu"
@@ -566,14 +566,24 @@ func main() {
 
 		usersGitHub := getUsersGitHub(config)
 
-		wrongUsersNoSuf, rightUsers := checkExistSuf(config, usersGitHub)
-		wrongUsersNoSufNoRecon, wrongUsersNoSufRecon := compareUsersLists(config, companyUsers, wrongUsersNoSuf)
+		wrongUsersNoSuf := make([]string, 0)
+		rightUsers := make([]string, 0)
+		wrongUsersNoSufNoRecon := make([]string, 0)
+		wrongUsersNoSufRecon := make([]string, 0)
+		wrongUsers := make([]string, 0)
 
-		wrongUsers, _ := compareUsersLists(config, companyUsers, rightUsers)
+		if config.GitHubSuf != "" {
+			wrongUsersNoSuf, rightUsers = checkExistSuf(config, usersGitHub)
+			wrongUsersNoSufNoRecon, wrongUsersNoSufRecon = compareUsersLists(config, companyUsers, wrongUsersNoSuf)
+			wrongUsers, _ = compareUsersLists(config, companyUsers, rightUsers)
+		} else {
+			log.Debugln("Ignoring suffix")
+			wrongUsersNoSufNoRecon, _ = compareUsersLists(config, companyUsers, usersGitHub)
+		}
 
 		subject := "Subject: Usuarios erroneos en GitHub\n\n"
-		message := "Hola:\n\nLos usuarios en la organización de" + config.GitHubOrg + "GitHub de las siguientes listas no" +
-			"cumplen con las directrices y deberían ser eliminados inmediatamente:\n"
+		message := "Hola:\n\nLos usuarios en la organización de" + config.GitHubOrg + "GitHub de las siguientes" +
+			"listas no cumplen con las directrices y deberían ser eliminados inmediatamente:\n"
 
 		usersToDelete := make([]string, 0)
 
