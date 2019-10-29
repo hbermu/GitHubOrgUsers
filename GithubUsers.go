@@ -269,11 +269,13 @@ func getUsersSQLite(config Config) []string {
 	db, err := sql.Open("sqlite3", config.SQLitePath)
 	checkError(err)
 
-	log.Debugln("Getting all rows")
-	rows, err := db.Query("SELECT username FROM github_users")
+	sqlSequence := "SELECT username FROM github_users"
+	log.Debugln("Preparing the SQL Swquence: " + sqlSequence)
+	rows, err := db.Query(sqlSequence)
 	checkError(err)
 	var username string
 
+	log.Debugln("Getting all rows")
 	for rows.Next() {
 		err = rows.Scan(&username)
 		checkError(err)
@@ -286,6 +288,37 @@ func getUsersSQLite(config Config) []string {
 	checkError(err)
 
 	return sqliteUsers
+}
+
+func delUsersSQLite(config Config, list []string){
+	log.Info("Deleting users form SQLite")
+
+	log.Debugln("Check if exist SQLite file")
+	_, err := os.Stat(config.SQLitePath)
+	checkError(err)
+
+	log.Debugln("Starting SQLite connection")
+	db, err := sql.Open("sqlite3", config.SQLitePath)
+	checkError(err)
+
+	sqlSequence := "DELETE FROM github_users WHERE username=?"
+	log.Debugln("Preparing the SQL Swquence: " + sqlSequence)
+	sequence, err := db.Prepare(sqlSequence)
+	checkError(err)
+
+	log.Debugln("Deleting rows from SQLite")
+	for _, user := range list {
+		log.Debugln("Deleting user: " + user)
+		res, err := sequence.Exec(user)
+		checkError(err)
+
+		_, err = res.RowsAffected()
+		checkError(err)
+	}
+
+	err = db.Close()
+	checkError(err)
+
 }
 
 func createSQLSchema(path string) {
@@ -401,16 +434,24 @@ func checkExistSuf(config Config, githubUsers []string) ([]string, []string) {
 	return wrongUsers, rightUsers
 }
 
-func compareUsersLists(config Config, ldapUsers []string, githubUsers []string) ([]string, []string) {
-	log.Info("Comparing users from GitHub and LDAP")
+// This function compare 2 lists and return 2 lists
+// @config -> Config struct
+// @list1  -> List with string to search
+// @list2  -> List with string to compare
+//
+// Returns:
+//			[]string 1 -> String in @list1 and not in @list2
+//			[]string 2 -> String in @list1 and @list2
+func compareUsersLists(config Config, list1 []string, list2 []string) ([]string, []string) {
+	log.Info("Comparing users from 2 lists")
 
 	wrongUsers := make([]string, 0)
 	rightUsers := make([]string, 0)
 
-	for _, user := range githubUsers {
+	for _, user := range list2 {
 
 		if !contains(strings.Replace(strings.ToLower(user), strings.ToLower(config.GitHubSuf), "", -1),
-			ldapUsers) {
+			list1) {
 			log.Debugln("Wrong user founded:", user)
 			if !contains(user, config.GitHubIgnore) {
 				wrongUsers = append(wrongUsers, user)
@@ -581,6 +622,8 @@ func main() {
 			wrongUsersNoSufNoRecon, _ = compareUsersLists(config, companyUsers, usersGitHub)
 		}
 
+		usersSQLiteNoGithub,_ := compareUsersLists(config, usersGitHub, companyUsers)
+
 		subject := "Subject: Usuarios erroneos en GitHub\n\n"
 		message := "Hola:\n\nLos usuarios en la organización de" + config.GitHubOrg + "GitHub de las siguientes" +
 			"listas no cumplen con las directrices y deberían ser eliminados inmediatamente:\n"
@@ -607,6 +650,15 @@ func main() {
 				message = message + "\t" + user + "\n"
 				usersToDelete = append(usersToDelete, user)
 			}
+		}
+		if len(usersSQLiteNoGithub) > 0 {
+			message = message + "Usuarios en base de datos pero no en GitHub:\n"
+			for _, user := range usersSQLiteNoGithub {
+				message = message + "\t" + user + "\n"
+				usersToDelete = append(usersToDelete, user)
+			}
+			delUsersSQLite(config, usersSQLiteNoGithub)
+			message = message + "Se han borrado estos usuarios de la base de datos\n"
 		}
 		if config.SMTPEnabled {
 			if len(wrongUsersNoSufRecon) > 0 || len(wrongUsers) > 0 || len(wrongUsersNoSufNoRecon) > 0 {
