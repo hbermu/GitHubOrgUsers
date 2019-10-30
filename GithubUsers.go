@@ -39,7 +39,7 @@ import (
 // Default Params
 const (
 	program           = "Github_Org_Users"
-	Version           = "0.3.1"
+	Version           = "0.4.0"
 	Revision          = "04/10/2019"
 	Branch            = "master"
 	BuildUser         = "hbermu"
@@ -302,7 +302,7 @@ func delUsersSQLite(config Config, list []string){
 	checkError(err)
 
 	sqlSequence := "DELETE FROM github_users WHERE username=?"
-	log.Debugln("Preparing the SQL Swquence: " + sqlSequence)
+	log.Debugln("Preparing the SQL Sequence: " + sqlSequence)
 	sequence, err := db.Prepare(sqlSequence)
 	checkError(err)
 
@@ -619,49 +619,54 @@ func main() {
 			wrongUsers, _ = compareUsersLists(config, companyUsers, rightUsers)
 		} else {
 			log.Debugln("Ignoring suffix")
+			log.Infoln("Comparing Company Users and GitHub Users")
 			wrongUsersNoSufNoRecon, _ = compareUsersLists(config, companyUsers, usersGitHub)
 		}
 
+		log.Infoln("Comparing GitHub Users and Company Users")
 		usersSQLiteNoGithub,_ := compareUsersLists(config, usersGitHub, companyUsers)
 
 		subject := "Subject: Usuarios erroneos en GitHub\n\n"
-		message := "Hola:\n\nLos usuarios en la organización de" + config.GitHubOrg + "GitHub de las siguientes" +
-			"listas no cumplen con las directrices y deberían ser eliminados inmediatamente:\n"
+		message := "Hola:\n\n"
+		if len(wrongUsersNoSufRecon) > 0 || len(wrongUsers) > 0 || len(wrongUsersNoSufNoRecon) > 0 {
+			message = "Los usuarios en la organización de" + config.GitHubOrg + "GitHub de las siguientes" +
+				"listas no cumplen con las directrices y deberían ser eliminados inmediatamente:\n"
+		}
 
 		usersToDelete := make([]string, 0)
 
 		if len(wrongUsersNoSufRecon) > 0 {
-			message = message + "Usuarios reconocidos sin el sufijo:\n"
+			message = message + "Usuarios reconocidos sin el sufijo: " + strconv.Itoa(len(wrongUsersNoSufRecon)) + "\n"
 			for _, user := range wrongUsersNoSufRecon {
 				message = message + "\t" + user + "\n"
 				usersToDelete = append(usersToDelete, user)
 			}
 		}
 		if len(wrongUsers) > 0 {
-			message = message + "Usuarios con el sufijo no reconocidos:\n"
+			message = message + "Usuarios con el sufijo no reconocidos: " + strconv.Itoa(len(wrongUsers)) + "\n"
 			for _, user := range wrongUsers {
 				message = message + "\t" + user + "\n"
 				usersToDelete = append(usersToDelete, user)
 			}
 		}
 		if len(wrongUsersNoSufNoRecon) > 0 {
-			message = message + "Usuarios no reconocidos:\n"
+			message = message + "Usuarios no reconocidos: " + strconv.Itoa(len(wrongUsersNoSufNoRecon)) + "\n"
 			for _, user := range wrongUsersNoSufNoRecon {
 				message = message + "\t" + user + "\n"
 				usersToDelete = append(usersToDelete, user)
 			}
 		}
 		if len(usersSQLiteNoGithub) > 0 {
-			message = message + "Usuarios en base de datos pero no en GitHub:\n"
+			message = message + "Los siguientes usuarios no se encuentran de la base de datos y han sido eliminados:\n" +
+				strconv.Itoa(len(usersSQLiteNoGithub)) + "\n"
 			for _, user := range usersSQLiteNoGithub {
 				message = message + "\t" + user + "\n"
-				usersToDelete = append(usersToDelete, user)
 			}
 			delUsersSQLite(config, usersSQLiteNoGithub)
-			message = message + "Se han borrado estos usuarios de la base de datos\n"
 		}
 		if config.SMTPEnabled {
-			if len(wrongUsersNoSufRecon) > 0 || len(wrongUsers) > 0 || len(wrongUsersNoSufNoRecon) > 0 {
+			if len(wrongUsersNoSufRecon) > 0 || len(wrongUsers) > 0 || len(wrongUsersNoSufNoRecon) > 0 ||
+				len(usersSQLiteNoGithub) > 0  {
 				sendMailReport(config, message, subject)
 			}
 		} else {
