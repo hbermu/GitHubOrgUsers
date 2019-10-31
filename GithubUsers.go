@@ -39,7 +39,7 @@ import (
 // Default Params
 const (
 	program           = "Github_Org_Users"
-	Version           = "0.4.0"
+	Version           = "0.4.1"
 	Revision          = "04/10/2019"
 	Branch            = "master"
 	BuildUser         = "hbermu"
@@ -657,7 +657,7 @@ func main() {
 			}
 		}
 		if len(usersSQLiteNoGithub) > 0 {
-			message = message + "Los siguientes usuarios no se encuentran de la base de datos y han sido eliminados:\n" +
+			message = message + "Los siguientes usuarios no se encuentran de la base de datos y han sido eliminados:" +
 				strconv.Itoa(len(usersSQLiteNoGithub)) + "\n"
 			for _, user := range usersSQLiteNoGithub {
 				message = message + "\t" + user + "\n"

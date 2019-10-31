@@ -12,8 +12,8 @@ FROM alpine:3.10
 ENV CREATED 2019-10-01
 LABEL maintainer1="Héctor Bermúdez<hbermu@protonmail.ch>"
 LABEL name="GitHub-Users-Ldap" \
-        version="0.4.0" \
-        description="Compare users from github org with your LDAP or SQLite" \
+        version="0.4.1" \
+        description="Compare users from github org with your LDAP and/or SQLite" \
         license="Apache License 2.0"
 
 # Install requisites
