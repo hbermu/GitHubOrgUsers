@@ -39,11 +39,11 @@ import (
 // Default Params
 const (
 	program           = "Github_Org_Users"
-	Version           = "0.4.1"
-	Revision          = "04/10/2019"
+	Version           = "0.4.2"
+	Revision          = "19/11/2019"
 	Branch            = "master"
 	BuildUser         = "hbermu"
-	BuildDate         = "04/10/2019"
+	BuildDate         = "19/11/2019"
 	defaultConfigPath = "./config.toml"
 
 	// LDAP Default Config
@@ -69,6 +69,7 @@ const (
 	defaultSQLitePath     = "./sqlite.db"
 	defaultSQLiteUser     = ""
 	defaultSQLitePassword = ""
+	defaultSQLiteDelete	  = false
 
 	// GitHub Default Config
 	defaultGitHubToken      = ""
@@ -108,6 +109,7 @@ type Config struct {
 	SQLitePath,
 	SQLiteUser,
 	SQLitePassword string
+	SQLiteDelete bool
 
 	// GitHub Config
 	GitHubToken,
@@ -146,6 +148,7 @@ func readConfig(configPath string) Config {
 	viper.SetDefault("sqlite.path", defaultSQLitePath)
 	viper.SetDefault("sqlite.user", defaultSQLiteUser)
 	viper.SetDefault("sqlite.password", defaultSQLitePassword)
+	viper.SetDefault("sqlite.delete", defaultSQLiteDelete)
 
 	// 		GitHub
 	viper.SetDefault("github.token", defaultGitHubToken)
@@ -202,6 +205,7 @@ func readConfig(configPath string) Config {
 		SQLitePath:          viper.GetString("sqlite.path"),
 		SQLiteUser:          viper.GetString("sqlite.user"),
 		SQLitePassword:      viper.GetString("sqlite.password"),
+		SQLiteDelete:      	 viper.GetBool("sqlite.delete"),
 		LdapEnabled:         viper.GetBool("ldap.enabled"),
 		LdapUser:            viper.GetString("ldap.user"),
 		LdapPassword:        viper.GetString("ldap.password"),
@@ -399,14 +403,35 @@ func gitHubRequest(config Config, page int) (string, bool) {
 	body, err := ioutil.ReadAll(resp.Body)
 	checkError(err)
 
-	log.Debugln("Close the response body")
-	defer resp.Body.Close()
-
 	if strings.Contains(string(body), "documentation_url") {
 		log.Fatal(string(body))
 	}
 
+	retry := 1
+	for strings.Contains(string(body), "504 Gateway Time-out") {
+		if retry >= 5 {
+			log.Warnln("Maximum number of retries exceeded")
+			log.Fatal(string(body))
+		}
+
+		log.Warnln("Time Out, trying again. Try number: " + strconv.Itoa(retry))
+		log.Debugln("Do the request")
+		resp, err = client.Do(req)
+		checkError(err)
+
+		log.Debugln("Read the response body")
+		body, err = ioutil.ReadAll(resp.Body)
+		checkError(err)
+
+		retry = retry +1
+	}
+
 	log.Debugln("Header received:", resp.Header.Get("Link"))
+
+	log.Debugln("Close the response body")
+	err = resp.Body.Close()
+	checkError(err)
+
 	return string(body), !strings.Contains(resp.Header.Get("Link"), "rel=\"last\"")
 
 }
@@ -657,12 +682,17 @@ func main() {
 			}
 		}
 		if len(usersSQLiteNoGithub) > 0 {
-			message = message + "Los siguientes usuarios no se encuentran de la base de datos y han sido eliminados:" +
+			message = message + "Los siguientes usuarios no se encuentran en la base de datos: " +
 				strconv.Itoa(len(usersSQLiteNoGithub)) + "\n"
 			for _, user := range usersSQLiteNoGithub {
 				message = message + "\t" + user + "\n"
 			}
-			delUsersSQLite(config, usersSQLiteNoGithub)
+			if config.SQLiteDelete {
+				delUsersSQLite(config, usersSQLiteNoGithub)
+				message = message + "Los anteriores usuarios han sido eliminados de la base de datos"
+			} else {
+				log.Warnln("Delete SQL users disabled")
+			}
 		}
 		if config.SMTPEnabled {
 			if len(wrongUsersNoSufRecon) > 0 || len(wrongUsers) > 0 || len(wrongUsersNoSufNoRecon) > 0 ||

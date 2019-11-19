@@ -18,6 +18,7 @@ enabled = false
 path = "./sqlite.db"
 user = ""
 password = ""
+delete = false
 
 ###########################
 ########## GITHUB #########
