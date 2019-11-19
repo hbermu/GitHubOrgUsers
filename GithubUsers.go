@@ -39,7 +39,7 @@ import (
 // Default Params
 const (
 	program           = "Github_Org_Users"
-	Version           = "0.4.2"
+	Version           = "0.4.3"
 	Revision          = "19/11/2019"
 	Branch            = "master"
 	BuildUser         = "hbermu"
